@@ -5,7 +5,7 @@
 - Estado de execução: `validada tecnicamente` (revalidação visual e funcional dos fluxos de Fase 1 sobre o commit `fc5cafc`).
 - Revisão humana: pendente.
 - Revisão clínica: pendente (nenhuma classificação clínica foi alterada; permanecem 7 regras `DOCUMENTED` e 64 `PENDING_REVIEW` conforme [docs/clinica/base-clinica.md](../clinica/base-clinica.md)).
-- Publicação: não realizada nesta sessão (nenhum push ou PR remoto executado sem autorização explícita).
+- Publicação: não realizada nesta sessão (sincronizado no repositório de staging `geraldotoledo/G6PDApp-ais` para auditoria cruzada; sem merge automático na `master` de `geraldotoledo/G6PDApp`).
 
 ## Problema, autorização e vínculos
 
@@ -18,7 +18,7 @@ Na verificação anterior ([RL-004](004-verificacao-candidata.md), item 15), o n
 - **Decisões herdadas vinculadas:** Plano conectado de 3 fases e adiamento do offline integral ([docs/planejamento/plano-correcao.md](../planejamento/plano-correcao.md) e [docs/planejamento/checklist-correcao.md](../planejamento/checklist-correcao.md)).
 - **Propostas relacionadas (permanecem `em discussão`, sem aprovação funcional presumida):** [P-001 a P-008](../governanca/propostas.md).
 - **Revisões locais anteriores vinculadas:** [RL-001](001-estrutura-documental.md), [RL-002](002-consolidacao-acervo.md), [RL-003](003-organizacao-documentacao.md) e [RL-004](004-verificacao-candidata.md).
-- **Base observada:** `master` em `fc5cafc6f0a1a6944eff8a59c5b870c930b7206f` (precedido por `fe1e4a3247693513c80e9036630c8fda82563692` e `406ec3edd5df06e9f1167f709da86c7c230b41cc`).
+- **Base observada:** `master` de `geraldotoledo/G6PDApp` em `fc5cafc6f0a1a6944eff8a59c5b870c930b7206f` (precedido por `fe1e4a3247693513c80e9036630c8fda82563692` e `406ec3edd5df06e9f1167f709da86c7c230b41cc`).
 
 ## Antes e depois
 
@@ -42,6 +42,8 @@ Na verificação anterior ([RL-004](004-verificacao-candidata.md), item 15), o n
 
 ## Execução e evidências
 
+- **Justificativa para suíte completa ([CONTRIBUTING.md](../../CONTRIBUTING.md) seção 4):**
+  `Full suite justified because: cross-cutting changes in completenessGate, normalizer, ruleEngine, rulesSync, and rules.json (v2026.10.3) require pre-merge/release validation across all 4 test suites and visual UI revalidation.`
 - **Verificações executadas e resultados:**
   - `npm test`: 160 testes executados em 4 suítes (`tests/completenessGate.test.ts`, `tests/provenance.test.ts`, `tests/ruleEngine.test.ts`, `tests/rulesSync.test.ts`), 160 aprovados, 0 falhas.
   - `npm run audit`: paridade entre `src/data/rules.json`, `src/data/defaultRules.ts` e `public/g6pd_rules.json` confirmada (`v2026.10.3`, 71 regras: 7 `DOCUMENTED`, 64 `PENDING_REVIEW`; 12 `safeLookalikes`; 7 fontes).
@@ -49,6 +51,29 @@ Na verificação anterior ([RL-004](004-verificacao-candidata.md), item 15), o n
   - Inspeção visual e interativa dos componentes `src/components/ScannerScreen.tsx`, `src/components/DrugSearchScreen.tsx`, `src/components/BarcodeScannerModal.tsx`, `src/components/SafePantryScreen.tsx`, `src/components/Header.tsx` e `src/components/AboutScreen.tsx`.
 - **Verificações omitidas e motivo:**
   - Testes em aparelho físico mobile, câmera real sobre embalagem física e compartilhamento nativo com apps externos de IA: exigem dispositivo físico do usuário fora do ambiente de pré-visualização web.
+
+## Detalhamento consolidado de PR por camada (fe1e4a3 + fc5cafc)
+
+### 1. Governança, Contexto de Produto e Estrutura Documental (`fe1e4a3`)
+- **Entrada e Regras de Trabalho ([README.md](../../README.md), [AGENTS.md](../../AGENTS.md), [CONTRIBUTING.md](../../CONTRIBUTING.md), [docs/index.md](../index.md)):**
+  - Define `docs/index.md` como roteador único de autoridade por assunto, eliminando definições concorrentes.
+  - Substitui no `README.md` promessas históricas absolutas (*"Zero falsos negativos"*, *"100% seguro"*, *"100% offline"*) pelo posicionamento real do produto: ferramenta gratuita de apoio à leitura de rótulos e bulas com alertas proporcionais e transparência sobre limitações ([docs/produto/contexto.md](../produto/contexto.md)).
+- **Organização por Domínio ([D-001](../governanca/decisoes.md), [D-002](../governanca/decisoes.md), [RL-001](001-estrutura-documental.md), [RL-002](002-consolidacao-acervo.md), [RL-003](003-organizacao-documentacao.md)):**
+  - `docs/produto/`: [contexto.md](../produto/contexto.md) e [arquitetura.md](../produto/arquitetura.md).
+  - `docs/clinica/`: [base-clinica.md](../clinica/base-clinica.md) (fontes S1–S7, separação entre as 7 regras `DOCUMENTED` e as 64 `PENDING_REVIEW`, e lacunas por categoria).
+  - `docs/planejamento/`: [plano-correcao.md](../planejamento/plano-correcao.md), [checklist-correcao.md](../planejamento/checklist-correcao.md) e [correcao-fase-1.md](../planejamento/correcao-fase-1.md), com todos os 37 links `file://` legados convertidos para caminhos relativos do repositório (137 links locais verificados).
+  - `docs/governanca/`: [estado-atual.md](../governanca/estado-atual.md), [decisoes.md](../governanca/decisoes.md) (`D-001`, `D-002`) e [propostas.md](../governanca/propostas.md) (`P-001` a `P-008`).
+  - `docs/init/`: preserva os documentos históricos (`01`, `03`, `04`, `07`) e [docs/init/README.md](../init/README.md) com verificação SHA-256 e aviso de que não representam o estado atual.
+
+### 2. Travas de Completude e Anti-Corrupção no Scanner (`C1` e `C2` — `src/engine/completenessGate.ts`, `src/components/ScannerScreen.tsx`)
+- **Correção `C1` (Bulas sem excipientes efetivos ou apenas com `q.s.p.`):** `evaluateCompletenessGate` inspeciona o segmento após `Excipientes:` / `Veículo:` e rejeita trechos vazios ou que contenham apenas fechamento quantitativo (`q.s.p. 1 comprimido`), retornando `YELLOW_INCOMPLETE_SCAN` em vez de `GREEN_SAFE`.
+- **Correção `C2` (Marcadores de corrupção e ruído de OCR na lista):** detecta `###`, `@@`, `???`, `\uFFFD` e símbolos ilegíveis na seção de ingredientes, forçando `YELLOW_INCOMPLETE_SCAN` quando não há item vermelho legível e mantendo `RED_BLOCKED` quando há substância proibida identificada.
+- **Atualização de Interface (`src/components/ScannerScreen.tsx`):** exibe o card *"Conferência pendente: Não foi possível confirmar uma lista completa e legível de ingredientes ou excipientes. Este resultado não libera o produto."* e oculta o botão de salvar na despensa.
+
+### 3. Motor Determinístico, Base `v2026.10.3` e Sincronização (`1.2.1`–`1.4.3`, `C3`–`C5`)
+- **Motor e Normalizador (`src/engine/ruleEngine.ts`, `src/engine/normalizer.ts`):** match direto para códigos `insCode` e `eNumber` isolados (`1.2.1`), proteção de sufixos químicos no normalizador (`1.2.2`), deduplicação de spans (`1.2.4`) e preservação de regras `SAFE` em `result.matches` com destaque `.hl-safe` e `badge-green` (`1.2.5`).
+- **Base `v2026.10.3` e Proveniência (`src/data/rules.json`, `scripts/audit-rules.ts`, `scripts/sync-rules.ts`):** remoção do sinônimo `"sal"` de Salicilatos e inclusão de `sal (cloreto de sódio)` em `safeLookalikes` (`1.3.1`); adição de 10 regras e remoção de `canfora` (`1.3.2`); inclusão de `sourceRef`, `evidenceKind` e `provenanceStatus` nas 71 regras (**7 `DOCUMENTED`** e **64 `PENDING_REVIEW`**).
+- **Validação Estrita e Persistência em `rulesSync.ts` (`C3` e `C4`):** validação de tipos opcionais, datas reais de calendário (`updatedAt`), unicidade de IDs e integridade referencial de `sourceRef` (`C3`), além de tratar a gravação da base validada como ponto de confirmação da sincronização (`C4`).
 
 ## Avaliação
 
@@ -59,8 +84,8 @@ Comentários humanos: pendentes. Nenhuma aprovação humana ou validação clín
 - **Pendências técnicas (Fase 2 — prontas para execução conforme [docs/planejamento/checklist-correcao.md](../planejamento/checklist-correcao.md)):**
   - `2.1` e `2.2`: `openFoodFacts.ts` e `BarcodeScannerModal.tsx` (corrigir badge binário que exibe verde para `YELLOW_ATTENTION`/`YELLOW_INCOMPLETE_SCAN` e substituir salvamento direto na despensa por envio ao Scanner para conferência física).
   - `2.3`: `pantryStorage.ts` e `SafePantryScreen.tsx` (remover 3 produtos pré-populados iniciais e exigir validação via `analyzeIngredientsText` no cadastro manual e importação JSON).
-  - `2.4`: `Header.tsx`, `AboutScreen.tsx`, `ScannerScreen.tsx` e `SafePantryScreen.tsx` (tornar `rulesVersion` reativa via `getActiveRulesDatabase()` pós-sync e substituir `alert`/`confirm` nativos).
+  - `2.4`: `Header.tsx`, `AboutScreen.tsx`, `ScannerScreen.tsx` e `SafePantryScreen.tsx` (tornar `rulesVersion` reativa via `getActiveRulesDatabase()` pós-sync, substituir `alert`/`confirm` nativos e revisar textos estáticos legados *"100% Offline"* e *"Zero Falsos Negativos"* conforme [docs/produto/contexto.md](../produto/contexto.md) e [P-003](../governanca/propostas.md)).
 - **Pendências de produto e clínica:**
-  - Decidir sobre [P-001](../governanca/propostas.md) (matriz de evidências e síntese sem consenso artificial), [P-002](../governanca/propostas.md) (análise de produto vs. consulta de componente) e [P-003](../governanca/propostas.md) (comunicação visual e substituição de textos que prometem segurança absoluta).
+  - Decidir sobre [P-001](../governanca/propostas.md), [P-002](../governanca/propostas.md) e [P-003](../governanca/propostas.md).
   - Reconciliação clínica das 64 regras em `PENDING_REVIEW` ([docs/clinica/base-clinica.md](../clinica/base-clinica.md)).
-- **Ações protegidas não realizadas:** nenhum commit, push, criação de PR remoto no GitHub, publicação ou reclassificação clínica foi executado.
+- **Ações protegidas não realizadas:** nenhum merge automático em `geraldotoledo/G6PDApp`, publicação ou reclassificação clínica foi executado.
